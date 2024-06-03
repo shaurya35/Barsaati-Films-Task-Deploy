@@ -1,0 +1,115 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Twitter Trends Scraper</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="element">
+        <h1>Twitter Trends Scraper</h1>
+        <form id="scrape-form">
+          <div class="form-group">
+            <label for="username">Twitter Username:</label>
+            <input type="text" id="username" name="username" />
+          </div>
+          <div class="form-group">
+            <label for="password">Twitter Password:</label>
+            <input type="password" id="password" name="password" />
+          </div>
+          <button type="button" id="start-script">Start Script</button>
+        </form>
+        <pre id="output"></pre>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById("start-script").addEventListener("click", async (event) => {
+        event.preventDefault();
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        document.getElementById("output").textContent = "Fetching data...";
+
+        try {
+          const response = await fetch("/data", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch data");
+          }
+
+          const data = await response.json();
+          document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          document.getElementById("output").textContent = "Error: " + error.message;
+        }
+      });
+    </script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Topics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Trending Topics</h1>
+    <button onclick="startScraping()">Click here to run the script</button>
+    <div id="result"></div>
+
+    <script>
+        async function startScraping() {
+            const response = await fetch('/data');
+            const data = await response.json();
+
+            if (data.error) {
+                document.getElementById("result").innerHTML = `<p>Error: ${data.error}</p>`;
+                return;
+            }
+
+            const resultHtml = `
+                <p>These are the most happening topics as on ${data.endTime}</p>
+                <ul>
+                    ${data.trends.map((trend, index) => `<li> Name of trend${index + 1}: ${trend}</li>`).join('')}
+                </ul>
+                <p>The IP address used for this query was ${data.ipAddress}</p>
+                <p>Here’s a JSON extract of this record:</p>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+                <button onclick="startScraping()">Click here to run the query again</button>
+            `;
+
+            document.getElementById("result").innerHTML = resultHtml;
+        }
+    </script>
+</body>
+</html>
