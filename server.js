@@ -273,7 +273,7 @@ app.get("/data", async (req, res) => {
 async function scrapeTrends(req) {
     const options = new chrome.Options();
     options.addArguments("--disable-blink-features=AutomationControlled");
-    // options.addArguments("--headless"); 
+    options.addArguments("--headless"); // Enable headless mode
     options.addArguments("--no-sandbox");
     options.addArguments("--disable-dev-shm-usage");
 
@@ -351,6 +351,4 @@ async function scrapeTrends(req) {
     }
 }
 
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-});
+module.exports = app;
