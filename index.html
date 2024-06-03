@@ -55,7 +55,7 @@
   </body>
 </html> -->
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -110,6 +110,62 @@
 
             document.getElementById("result").innerHTML = resultHtml;
         }
+    </script>
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Topics</title>
+    <style>
+        #result {
+            display: none;
+        }
+        #loading {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Click here to run the script.</h1>
+    <button id="fetchButton">Fetch Trending Topics</button>
+    <div id="loading">Fetching data...</div>
+    <div id="result"></div>
+    <div id="error"></div>
+    <script>
+        document.getElementById("fetchButton").addEventListener("click", async () => {
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("result").style.display = "none";
+            document.getElementById("error").innerHTML = "";
+            try {
+                const response = await fetch('/data');
+                const data = await response.json();
+                document.getElementById("loading").style.display = "none";
+                if (response.ok) {
+                    document.getElementById("result").style.display = "block";
+                    document.getElementById("result").innerHTML = `
+                        <h2>These are the most happening topics as on ${data.endTime}</h2>
+                        <ul>
+                            ${data.trends.map(trend => `<li>${trend}</li>`).join('')}
+                        </ul>
+                        <p>The IP address used for this query was ${data.ipAddress}.</p>
+                        <h3>Here’s a JSON extract of this record:</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        <button id="fetchButton">Fetch Trending Topics Again</button>
+                    `;
+                } else {
+                    document.getElementById("error").innerHTML = data.error;
+                }
+            } catch (error) {
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("error").innerHTML = "An unexpected error occurred.";
+            }
+        });
     </script>
 </body>
 </html>

@@ -136,6 +136,117 @@
 // });
 
 
+// const express = require("express");
+// const { Builder, By, until } = require("selenium-webdriver");
+// const chrome = require("selenium-webdriver/chrome");
+// const moment = require("moment");
+// const uuid = require("uuid");
+// const path = require("path");
+
+// const app = express();
+// const port = 3000;
+
+// app.get("/", (req, res) => {
+//     res.sendFile(path.join(__dirname, "index.html"));
+// });
+
+// app.get("/data", async (req, res) => {
+//     const result = await scrapeTrends(req);
+//     res.json(result);
+// });
+
+// async function scrapeTrends(req) {
+//     const options = new chrome.Options();
+//     options.addArguments("--disable-blink-features=AutomationControlled");
+//     // options.addArguments("--headless"); 
+
+//     const driver = await new Builder()
+//         .forBrowser("chrome")
+//         .setChromeOptions(options)
+//         .build();
+
+//     try {
+//         await driver.get("https://x.com/i/flow/login?input_flow_data=%7B%22requested_variant%22%3A%22eyJteCI6IjIifQ%3D%3D%22%7D");
+
+//         await driver.manage().setTimeouts({ implicit: 10000 });
+//         await driver.manage().window().maximize();
+
+//         // Wait for the username field to be present
+//         const usernameField = await driver.wait(
+//             until.elementLocated(By.css('input[autocomplete="username"]')),
+//             20000
+//         );
+//         await usernameField.sendKeys("_00cypher");
+
+//         // Click the "Next" button
+//         const nextButton = await driver.wait(
+//             until.elementLocated(By.xpath('//span[text()="Next"]/ancestor::button')),
+//             20000
+//         );
+//         await nextButton.click();
+
+//         // Wait for the password field to be present
+//         const passwordField = await driver.wait(
+//             until.elementLocated(By.css('input[autocomplete="current-password"]')),
+//             20000
+//         );
+//         await passwordField.sendKeys("twitterplatinums108");
+
+//         // Click the "Log in" button
+//         const loginButton = await driver.wait(
+//             until.elementLocated(
+//                 By.xpath('//span[text()="Log in"]/ancestor::button')
+//             ),
+//             20000
+//         );
+//         await loginButton.click();
+
+//         // Wait for the "What's happening" section to be present
+//         const whatsHappeningSection = await driver.wait(
+//             until.elementLocated(By.css('[aria-label="Timeline: Trending now"]')),
+//             20000
+//         );
+
+//         // Wait until the trends are loaded and visible
+//         await driver.wait(until.elementIsVisible(whatsHappeningSection), 20000);
+
+//         const trends = await driver.findElements(
+//             By.css('[aria-label="Timeline: Trending now"] span')
+//         );
+//         const topTrends = [];
+
+//         for (let i = 0; i < Math.min(trends.length, 5); i++) {
+//             const trend = await trends[i].getText();
+//             topTrends.push(trend);
+//         }
+
+//         const uniqueId = uuid.v4();
+//         const endTime = moment().format("YYYY-MM-DD HH:mm:ss");
+
+//         const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+//         const result = {
+//             uniqueId,
+//             trends: topTrends,
+//             endTime,
+//             ipAddress,
+//         };
+
+//         console.log(result);
+//         return result;
+//     } catch (err) {
+//         console.error("An error occurred:", err);
+//         return { error: "An error occurred while scraping trends." };
+//     } finally {
+//         await driver.quit();
+//     }
+// }
+
+// app.listen(port, () => {
+//     console.log(`Server is running at http://localhost:${port}`);
+// });
+
+
 const express = require("express");
 const { Builder, By, until } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
@@ -152,13 +263,19 @@ app.get("/", (req, res) => {
 
 app.get("/data", async (req, res) => {
     const result = await scrapeTrends(req);
-    res.json(result);
+    if (result.error) {
+        res.status(400).json(result);
+    } else {
+        res.json(result);
+    }
 });
 
 async function scrapeTrends(req) {
     const options = new chrome.Options();
     options.addArguments("--disable-blink-features=AutomationControlled");
     // options.addArguments("--headless"); 
+    options.addArguments("--no-sandbox");
+    options.addArguments("--disable-dev-shm-usage");
 
     const driver = await new Builder()
         .forBrowser("chrome")
@@ -168,47 +285,39 @@ async function scrapeTrends(req) {
     try {
         await driver.get("https://x.com/i/flow/login?input_flow_data=%7B%22requested_variant%22%3A%22eyJteCI6IjIifQ%3D%3D%22%7D");
 
-        await driver.manage().setTimeouts({ implicit: 10000 });
+        await driver.manage().setTimeouts({ implicit: 30000 });
         await driver.manage().window().maximize();
 
-        // Wait for the username field to be present
         const usernameField = await driver.wait(
             until.elementLocated(By.css('input[autocomplete="username"]')),
-            20000
+            30000
         );
         await usernameField.sendKeys("_00cypher");
 
-        // Click the "Next" button
         const nextButton = await driver.wait(
             until.elementLocated(By.xpath('//span[text()="Next"]/ancestor::button')),
-            20000
+            30000
         );
         await nextButton.click();
 
-        // Wait for the password field to be present
         const passwordField = await driver.wait(
             until.elementLocated(By.css('input[autocomplete="current-password"]')),
-            20000
+            30000
         );
         await passwordField.sendKeys("twitterplatinums108");
 
-        // Click the "Log in" button
         const loginButton = await driver.wait(
-            until.elementLocated(
-                By.xpath('//span[text()="Log in"]/ancestor::button')
-            ),
-            20000
+            until.elementLocated(By.xpath('//span[text()="Log in"]/ancestor::button')),
+            30000
         );
         await loginButton.click();
 
-        // Wait for the "What's happening" section to be present
         const whatsHappeningSection = await driver.wait(
             until.elementLocated(By.css('[aria-label="Timeline: Trending now"]')),
-            20000
+            30000
         );
 
-        // Wait until the trends are loaded and visible
-        await driver.wait(until.elementIsVisible(whatsHappeningSection), 20000);
+        await driver.wait(until.elementIsVisible(whatsHappeningSection), 30000);
 
         const trends = await driver.findElements(
             By.css('[aria-label="Timeline: Trending now"] span')
@@ -236,7 +345,7 @@ async function scrapeTrends(req) {
         return result;
     } catch (err) {
         console.error("An error occurred:", err);
-        return { error: "An error occurred while scraping trends." };
+        return { error: "Wrong credentials or other error occurred." };
     } finally {
         await driver.quit();
     }
